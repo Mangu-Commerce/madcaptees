@@ -161,9 +161,10 @@ export function Navbar({ cartCount, onNavigate, onOpenCart, onFilterChange }: Na
                 </button>
               )}
               <button
-                onClick={() => { onNavigate('admin-dashboard'); handleNavClick(); }}
-                className="text-[#0A0A0A] hover:text-[#C41E3A] transition-colors"
-                aria-label="Account"
+                type="button"
+                className="text-[#0A0A0A] hover:text-[#C41E3A] transition-colors opacity-40 cursor-not-allowed"
+                aria-label="Account (coming soon)"
+                title="Customer accounts coming soon"
               >
                 <User size={18} />
               </button>

@@ -135,6 +135,26 @@ export async function fetchProducts(): Promise<Product[]> {
   return (data ?? []).map(transformProduct);
 }
 
+/** Storefront catalog — published only (RLS also enforces for anon). */
+export async function fetchPublishedProducts(): Promise<Product[]> {
+  if (!hasSupabaseConfig) {
+    return Promise.resolve(getProducts().filter((p) => p.published));
+  }
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, product_images(*), product_variants(*)')
+    .eq('published', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchPublishedProducts error:', error);
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map(transformProduct);
+}
+
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   if (!hasSupabaseConfig) {
     return Promise.resolve(getLocalProductBySlug(slug) ?? null);
@@ -511,6 +531,57 @@ export async function toggleProductPublished(
 
   if (error) {
     console.error('toggleProductPublished error:', error);
+    throw new Error(error.message);
+  }
+}
+
+const PRODUCT_IMAGES_BUCKET = 'product-images';
+
+export async function uploadProductImage(
+  file: File,
+  productSlug: string
+): Promise<string> {
+  if (!hasSupabaseConfig) {
+    return Promise.resolve(URL.createObjectURL(file));
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${productSlug}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .upload(path, file, { cacheControl: '3600', upsert: false });
+
+  if (uploadError) {
+    console.error('uploadProductImage error:', uploadError);
+    throw new Error(uploadError.message);
+  }
+
+  const { data } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function replaceProductImages(
+  productId: string,
+  images: Pick<ProductImage, 'url' | 'alt_text' | 'is_primary' | 'sort_order'>[]
+): Promise<void> {
+  if (!hasSupabaseConfig) return;
+
+  await supabase.from('product_images').delete().eq('product_id', productId);
+
+  if (images.length === 0) return;
+
+  const rows = images.map((img, i) => ({
+    product_id: productId,
+    url: img.url,
+    alt_text: img.alt_text ?? null,
+    is_primary: img.is_primary ?? i === 0,
+    sort_order: img.sort_order ?? i,
+  }));
+
+  const { error } = await supabase.from('product_images').insert(rows);
+  if (error) {
+    console.error('replaceProductImages error:', error);
     throw new Error(error.message);
   }
 }

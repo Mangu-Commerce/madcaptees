@@ -1,4 +1,4 @@
-import { getNewArrivals } from '@/lib/data';
+import { useCatalog } from '@/contexts/CatalogContext';
 import { ProductCard } from './ProductCard';
 import type { Product, AppView, FilterState } from '@/types';
 
@@ -11,6 +11,7 @@ interface NewArrivalsProps {
 }
 
 export function NewArrivals({ onProductClick, onQuickView, onQuickAdd, onNavigate, onFilterChange }: NewArrivalsProps) {
+  const { getNewArrivals } = useCatalog();
   const products = getNewArrivals();
 
   return (

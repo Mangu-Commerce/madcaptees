@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getBestSellers } from '@/lib/data';
+import { useCatalog } from '@/contexts/CatalogContext';
 import { ProductCard } from './ProductCard';
 import type { Product, AppView, FilterState } from '@/types';
 
@@ -13,7 +13,8 @@ interface BestSellersProps {
 }
 
 export function BestSellers({ onProductClick, onQuickView, onQuickAdd, onNavigate, onFilterChange }: BestSellersProps) {
-  const products = getBestSellers().slice(0, 8);
+  const { getBestSellers } = useCatalog();
+  const products = getBestSellers();
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const scroll = (direction: 'left' | 'right') => {
