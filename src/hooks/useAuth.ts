@@ -91,10 +91,24 @@ export function useAuth() {
     if (error) throw error;
   }, []);
 
+  const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
+    if (!hasSupabaseConfig) {
+      throw new Error('Supabase is not configured. Add keys to .env.local');
+    }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: fullName ? { full_name: fullName } : undefined,
+      },
+    });
+    if (error) throw error;
+  }, []);
+
   const signOut = useCallback(async () => {
     if (!hasSupabaseConfig) return;
     await supabase.auth.signOut();
   }, []);
 
-  return { ...state, signIn, signOut };
+  return { ...state, signIn, signUp, signOut };
 }

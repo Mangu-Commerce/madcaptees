@@ -162,9 +162,9 @@ export function Navbar({ cartCount, onNavigate, onOpenCart, onFilterChange }: Na
               )}
               <button
                 type="button"
-                className="text-[#0A0A0A] hover:text-[#C41E3A] transition-colors opacity-40 cursor-not-allowed"
-                aria-label="Account (coming soon)"
-                title="Customer accounts coming soon"
+                onClick={() => { onNavigate('account'); handleNavClick(); }}
+                className="text-[#0A0A0A] hover:text-[#C41E3A] transition-colors"
+                aria-label="Account"
               >
                 <User size={18} />
               </button>
@@ -266,9 +266,9 @@ export function Navbar({ cartCount, onNavigate, onOpenCart, onFilterChange }: Na
                 <ShoppingBag size={18} />
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>Cart ({cartCount})</span>
               </button>
-              <button onClick={() => { onNavigate('admin-dashboard'); handleNavClick(); }} className="flex items-center gap-2 text-[#0A0A0A]">
+              <button onClick={() => { onNavigate('account'); handleNavClick(); }} className="flex items-center gap-2 text-[#0A0A0A]">
                 <User size={18} />
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>Admin</span>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '13px' }}>Account</span>
               </button>
             </div>
           </div>

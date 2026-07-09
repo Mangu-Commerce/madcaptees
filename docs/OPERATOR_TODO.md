@@ -6,111 +6,94 @@ Copy this checklist and work top to bottom. Check each box when done.
 
 ---
 
-## 1. Environment file (15 min)
+## Already done for you
+
+- [x] Supabase project `madcap-tees` (`mggzocnsacpzgakpymrt`)
+- [x] Migrations 001–004 + storage bucket + RLS (`is_admin()` recursion fix)
+- [x] Catalog seeded (8 products, 64 variants, `DEMO10`)
+- [x] Vercel project linked to `redinc23/madcaptees`
+- [x] Deploy config fixed (`outputDirectory: dist`, Vite framework)
+- [x] Preview deploy **READY** on branch `cursor/phase2-live-b82e` (PR #7)
+
+**Live preview (SSO-gated until step 0):**  
+https://madcaptees-git-cursor-phase2-live-b82e-redinc23s-projects.vercel.app
+
+---
+
+## 0. Make the site public (2 min) — required
+
+Vercel Authentication is currently on for **all** URLs (including production). Until you turn it off, shoppers hit a Vercel login wall.
+
+1. Vercel → **madcaptees** → Settings → **Deployment Protection**
+2. Set **Vercel Authentication** to **Off** (or Standard Protection → only Preview, not Production)
+3. Save
+
+---
+
+## 1. Paste server secrets into Vercel (10 min)
+
+Client Supabase URL/anon key are already in `.env.production` (baked into the Vite build).  
+You still must add **server-only** secrets in Vercel → **madcaptees** → Settings → Environment Variables (Production + Preview):
+
+| Variable | Value |
+|----------|-------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API → **service_role** (never commit / never expose client-side) |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | [Stripe](https://dashboard.stripe.com/apikeys) → `pk_test_...` |
+| `STRIPE_SECRET_KEY` | Stripe → `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | Step 3 below (`whsec_...`) |
+| `VITE_SITE_URL` | Override if using a custom domain |
+
+Optional later: `RESEND_API_KEY`, `PRINTFUL_API_KEY`.
+
+After saving, **Redeploy** the latest deployment.
+
+Local copy (optional):
 
 ```bash
 cp .env.local.example .env.local
-```
-
-Fill from dashboards (same pattern as `my_publishing`):
-
-| Variable | Where to get it |
-|----------|-----------------|
-| `VITE_SUPABASE_URL` | [Supabase](https://app.supabase.com) → Project Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Same page (anon public) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Same page (service_role — **never commit**) |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | [Stripe](https://dashboard.stripe.com/apikeys) → pk_test_... |
-| `STRIPE_SECRET_KEY` | Stripe → sk_test_... |
-| `STRIPE_WEBHOOK_SECRET` | Step 4 below |
-| `VITE_SITE_URL` | `http://localhost:3000` locally, your Vercel URL in prod |
-
-Verify:
-
-```bash
+# fill same values; VITE_SITE_URL=http://localhost:3000
 npm run validate-env:strict
 ```
 
 ---
 
-## 2. Supabase database (20 min)
+## 2. Admin user (5 min)
 
-1. Create project at [supabase.com](https://supabase.com) (or reuse one)
-2. SQL Editor → paste full file → Run:
-   - `supabase/migrations/001_initial_schema.sql`
-   - `supabase/migrations/002_storage_bucket.sql`
-3. **Auth → Users → Add user** with your email + password
-4. SQL Editor → make yourself admin:
+1. Supabase → **Authentication → Users → Add user** (email + password)
+2. SQL Editor:
 
 ```sql
 UPDATE profiles SET is_admin = true WHERE email = 'YOUR_EMAIL@example.com';
 ```
 
-5. Confirm storage bucket `product-images` exists (public read)
-
 ---
 
-## 3. Vercel deploy (20 min)
-
-1. [vercel.com](https://vercel.com) → Import `redinc23/madcaptees`
-2. Framework: **Vite**
-3. Add **all** env vars from `.env.local` (same names)
-4. Deploy
-5. Copy production URL → set `VITE_SITE_URL` in Vercel env → redeploy
-
----
-
-## 4. Stripe webhook (10 min)
+## 3. Stripe webhook (10 min)
 
 1. Stripe Dashboard → **Developers → Webhooks → Add endpoint**
-2. URL: `https://YOUR-VERCEL-URL.vercel.app/api/stripe/webhook`
+2. URL: `https://madcaptees-redinc23s-projects.vercel.app/api/stripe/webhook`
 3. Event: `checkout.session.completed`
-4. Copy signing secret → `STRIPE_WEBHOOK_SECRET` in Vercel env → redeploy
-
-Local testing (optional):
-
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
+4. Copy signing secret → `STRIPE_WEBHOOK_SECRET` in Vercel → redeploy
 
 ---
 
-## 5. Custom domain (optional)
+## 4. Custom domain (optional)
 
-1. Vercel → Project → Settings → Domains → add `madcaptees.com` (or your domain)
-2. Update DNS per Vercel instructions
-3. Set `VITE_SITE_URL=https://madcaptees.com` → redeploy
-
----
-
-## 6. Email receipts — Phase 2 (optional for launch)
-
-1. [resend.com](https://resend.com) → API key
-2. Verify sending domain
-3. Add `RESEND_API_KEY` to Vercel env
+1. Vercel → Project → Domains → add your domain
+2. Update DNS per Vercel
+3. Set `VITE_SITE_URL=https://yourdomain.com` → redeploy
 
 ---
 
-## 7. Print-on-demand — Phase 3 (pick one)
+## 5. Smoke test (10 min)
 
-| Provider | Sign up | Env var |
-|----------|---------|---------|
-| Printful | [printful.com](https://printful.com/dashboard/api) | `PRINTFUL_API_KEY` |
-| Printify | [printify.com](https://printify.com/app/account/api) | `PRINTIFY_API_KEY` |
-
-Map variant IDs in admin once you choose.
-
----
-
-## 8. Smoke test (10 min)
-
-After deploy:
-
-- [ ] Homepage loads
-- [ ] Shop shows products
+- [ ] Homepage loads at the Vercel URL
+- [ ] Shop shows the 8 seeded products
 - [ ] Add to cart → checkout
 - [ ] Stripe test card `4242 4242 4242 4242` completes
-- [ ] Order appears in **Admin → Orders** (`/admin`, your login)
-- [ ] Add a shirt in admin with image → shows on shop within ~10s
+- [ ] Order appears in **Admin → Orders** (`/admin`)
+- [ ] Discount `DEMO10` applies at checkout
+- [ ] `/account` sign-up / order history works
 
 ---
 
@@ -118,17 +101,10 @@ After deploy:
 
 ```bash
 npm run validate-env:strict
-./scripts/apply-supabase-migrations.sh
 ./scripts/launch-readiness.sh
 ```
 
 **Blocker board:** `blockers/SUMMARY.md`  
 **Agent playbook:** `docs/AGENT_PLAYBOOK.md`
 
----
-
-## What you do NOT need to code
-
-Agents handle: storefront ↔ Supabase wiring, admin auth UI, image upload, Stripe API routes, routing, placeholders, and blocker updates.
-
-You handle: **keys, DNS, dashboards, and the smoke test above.**
+You handle: **keys, DNS, dashboards, and the smoke test.** Agents handle the rest.
