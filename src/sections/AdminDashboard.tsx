@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCatalog } from '@/contexts/CatalogContext';
 import { hasSupabaseConfig } from '@/lib/supabase';
 import { AdminLogin } from '@/sections/AdminLogin';
+import { AdminOrdersChart } from '@/sections/AdminOrdersChart';
 import {
   fetchProducts,
   fetchOrders,
@@ -520,6 +521,8 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 </div>
               ))}
             </div>
+
+            <AdminOrdersChart orders={orders} />
 
             {/* Quick Actions */}
             <div className="bg-white border border-[#0A0A0A]/15 p-6 mb-8">
