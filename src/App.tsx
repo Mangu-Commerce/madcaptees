@@ -17,10 +17,12 @@ import { Hero } from '@/sections/Hero';
 import { CollectionCards } from '@/sections/CollectionCards';
 import { BestSellers } from '@/sections/BestSellers';
 import { NewArrivals } from '@/sections/NewArrivals';
+import { InstagramFeed } from '@/sections/InstagramFeed';
 import { ShopPage } from '@/sections/ShopPage';
 import { ProductDetail } from '@/sections/ProductDetail';
 import { CartDrawer } from '@/sections/CartDrawer';
 import { CheckoutPage } from '@/sections/CheckoutPage';
+import { AccountPage } from '@/sections/AccountPage';
 import { AdminDashboard } from '@/sections/AdminDashboard';
 import { QuickViewModal } from '@/sections/QuickViewModal';
 import { ToastContainer } from '@/sections/ToastContainer';
@@ -153,6 +155,10 @@ function App() {
       applyPageSeo({ title: 'Checkout', path: '/checkout', noIndex: true });
       return;
     }
+    if (currentView === 'account') {
+      applyPageSeo({ title: 'Your Account', path: '/account', noIndex: true });
+      return;
+    }
     applyPageSeo({ path: '/' });
   }, [currentView, selectedProduct, location.pathname]);
 
@@ -195,6 +201,7 @@ function App() {
               onNavigate={handleNavigate}
               onFilterChange={handleFilterChange}
             />
+            <InstagramFeed />
           </>
         )}
 
@@ -374,6 +381,8 @@ function App() {
             initialSuccess={checkoutSuccess}
           />
         )}
+
+        {currentView === 'account' && <AccountPage onNavigate={handleNavigate} />}
       </main>
 
       <Footer onNavigate={handleNavigate} onFilterChange={handleFilterChange} />

@@ -12,6 +12,8 @@ export function viewToPath(view: AppView, slug?: string): string {
       return '/cart';
     case 'checkout':
       return '/checkout';
+    case 'account':
+      return '/account';
     case 'admin-dashboard':
     case 'admin-products':
     case 'admin-orders':
@@ -35,5 +37,6 @@ export function getViewFromPath(pathname: string): { view: AppView; slug: string
   if (pathname === '/shop') return { view: 'shop', slug: '' };
   if (pathname === '/cart') return { view: 'cart', slug: '' };
   if (pathname === '/checkout') return { view: 'checkout', slug: '' };
+  if (pathname === '/account') return { view: 'account', slug: '' };
   return { view: 'home', slug: '' };
 }

@@ -112,6 +112,25 @@ export interface Profile {
   created_at: string;
 }
 
+export interface WishlistItem {
+  id: string;
+  user_id: string | null;
+  product_id: string;
+  created_at: string;
+  product?: Product;
+}
+
+export interface DiscountCode {
+  id: string;
+  code: string;
+  percent_off: number | null;
+  amount_off: number | null;
+  active: boolean;
+  max_uses: number | null;
+  used_count: number;
+  expires_at: string | null;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -124,7 +143,7 @@ export type CategoryFilter = 'all' | 'tees' | 'hoodies' | 'longsleeve' | 'hats' 
 
 export type ThemeFilter = 'all' | 'nj-flavor' | 'satirical' | 'retro' | 'band-merch' | 'best-sellers';
 
-export type AppView = 'home' | 'shop' | 'product' | 'cart' | 'checkout' | 'admin-dashboard' | 'admin-products' | 'admin-orders' | 'admin-product-form';
+export type AppView = 'home' | 'shop' | 'product' | 'cart' | 'checkout' | 'account' | 'admin-dashboard' | 'admin-products' | 'admin-orders' | 'admin-product-form';
 
 export interface FilterState {
   category: CategoryFilter;

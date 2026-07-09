@@ -272,6 +272,58 @@ export interface Database {
           created_at?: string;
         };
       };
+      wishlists: {
+        Row: {
+          id: string;
+          user_id: string;
+          product_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          product_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          product_id?: string;
+          created_at?: string;
+        };
+      };
+      discount_codes: {
+        Row: {
+          id: string;
+          code: string;
+          percent_off: number | null;
+          amount_off: number | null;
+          active: boolean;
+          max_uses: number | null;
+          used_count: number;
+          expires_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          percent_off?: number | null;
+          amount_off?: number | null;
+          active?: boolean;
+          max_uses?: number | null;
+          used_count?: number;
+          expires_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          percent_off?: number | null;
+          amount_off?: number | null;
+          active?: boolean;
+          max_uses?: number | null;
+          used_count?: number;
+          expires_at?: string | null;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

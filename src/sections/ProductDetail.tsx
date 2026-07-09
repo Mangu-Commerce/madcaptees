@@ -4,6 +4,7 @@ import type { Product, CartItem, AppView } from '@/types';
 import { PRODUCT_COLORS, PRODUCT_SIZES, FREE_SHIPPING_THRESHOLD } from '@/types';
 import { formatPrice } from '@/lib/data';
 import { useCatalog } from '@/contexts/CatalogContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { productImageUrl } from '@/lib/placeholders';
 import { ProductGallery } from '@/sections/ProductGallery';
 
@@ -18,6 +19,8 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const wishlist = useWishlist();
+  const isWishlisted = wishlist.isWishlisted(product.id);
 
   const primaryImage = product.product_images.find(i => i.is_primary) || product.product_images[0];
   const hasSale = product.sale_price !== null && product.sale_price < product.base_price;
@@ -219,9 +222,17 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
 
           {/* Share/Wishlist */}
           <div className="flex items-center gap-4 pt-6 border-t border-[#0A0A0A]/10">
-            <button className="flex items-center gap-2 text-sm text-[#64748B] hover:text-[#0A0A0A] transition-colors" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              <Heart size={16} />
-              Add to Wishlist
+            <button
+              type="button"
+              onClick={() => wishlist.toggle(product.id)}
+              className={`flex items-center gap-2 text-sm transition-colors ${
+                isWishlisted ? 'text-[#C41E3A]' : 'text-[#64748B] hover:text-[#0A0A0A]'
+              }`}
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              aria-pressed={isWishlisted}
+            >
+              <Heart size={16} fill={isWishlisted ? '#C41E3A' : 'none'} color={isWishlisted ? '#C41E3A' : 'currentColor'} />
+              {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
             </button>
             <button
               type="button"
