@@ -1,8 +1,13 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, CreditCard, Check, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, CreditCard, Check, Loader2, Tag } from 'lucide-react';
 import type { CartItem, AppView } from '@/types';
 import { formatPrice, addOrder } from '@/lib/data';
-import { isStripeCheckoutEnabled, startStripeCheckout } from '@/lib/checkout';
+import {
+  applyLocalDemoDiscount,
+  isStripeCheckoutEnabled,
+  startStripeCheckout,
+  validateDiscount,
+} from '@/lib/checkout';
 
 interface CheckoutPageProps {
   items: CartItem[];
@@ -18,7 +23,7 @@ export function CheckoutPage({
   items,
   subtotal,
   shipping,
-  total,
+  total: _cartTotal,
   onNavigate,
   onClearCart,
   initialSuccess = false,
@@ -33,7 +38,28 @@ export function CheckoutPage({
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
+  const [discountInput, setDiscountInput] = useState('');
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [discountPercent, setDiscountPercent] = useState<number | null>(null);
+  const [discountFixed, setDiscountFixed] = useState<number | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
+
   const stripeEnabled = isStripeCheckoutEnabled();
+
+  const discountAmount = useMemo(() => {
+    if (!discountCode) return 0;
+    if (discountPercent != null && discountPercent > 0) {
+      return Math.round(subtotal * (discountPercent / 100) * 100) / 100;
+    }
+    if (discountFixed != null && discountFixed > 0) {
+      return Math.min(subtotal, discountFixed);
+    }
+    return 0;
+  }, [discountCode, discountPercent, discountFixed, subtotal]);
+
+  const discountedSubtotal = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+  const payableTotal = Math.round((discountedSubtotal + shipping) * 100) / 100;
 
   useEffect(() => {
     if (initialSuccess) {
@@ -44,6 +70,49 @@ export function CheckoutPage({
   const handleSubmitInfo = (e: React.FormEvent) => {
     e.preventDefault();
     setStep('payment');
+  };
+
+  const handleApplyDiscount = async () => {
+    setDiscountError(null);
+    setDiscountLoading(true);
+    try {
+      const result = await validateDiscount(discountInput);
+      if (!result.valid) {
+        setDiscountCode(null);
+        setDiscountPercent(null);
+        setDiscountFixed(null);
+        setDiscountError(result.error || 'Invalid discount code');
+        return;
+      }
+      setDiscountCode(result.code || discountInput.trim().toUpperCase());
+      setDiscountPercent(result.percent_off ?? null);
+      setDiscountFixed(result.amount_off ?? null);
+      setDiscountError(null);
+    } catch {
+      // Local demo fallback when API is unreachable
+      const local = applyLocalDemoDiscount(discountInput, subtotal);
+      if (local.valid) {
+        setDiscountCode(local.code || 'DEMO10');
+        setDiscountPercent(local.percent_off ?? 10);
+        setDiscountFixed(null);
+        setDiscountError(null);
+      } else {
+        setDiscountCode(null);
+        setDiscountPercent(null);
+        setDiscountFixed(null);
+        setDiscountError(local.error || 'Invalid discount code');
+      }
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode(null);
+    setDiscountPercent(null);
+    setDiscountFixed(null);
+    setDiscountInput('');
+    setDiscountError(null);
   };
 
   const handlePlaceOrder = async () => {
@@ -58,7 +127,8 @@ export function CheckoutPage({
           address,
           subtotal,
           shipping,
-          total,
+          total: payableTotal,
+          discountCode: discountCode || undefined,
         });
       } catch (err: unknown) {
         setPayError(err instanceof Error ? err.message : 'Checkout failed');
@@ -67,15 +137,37 @@ export function CheckoutPage({
       return;
     }
 
+    // Local demo checkout — apply DEMO10 / validated discount
+    let demoSubtotal = subtotal;
+    let demoDiscountAmount = 0;
+    let appliedCode = discountCode;
+
+    if (discountCode) {
+      demoDiscountAmount = discountAmount;
+      demoSubtotal = discountedSubtotal;
+    } else if (discountInput.trim()) {
+      const local = applyLocalDemoDiscount(discountInput, subtotal);
+      if (local.valid) {
+        appliedCode = local.code || 'DEMO10';
+        demoDiscountAmount = local.discountAmount;
+        demoSubtotal = local.discountedSubtotal;
+      }
+    }
+
+    const demoTotal = Math.round((demoSubtotal + shipping) * 100) / 100;
+    const orderId = `ord-${Date.now()}`;
+
     const newOrder: any = {
-      id: `ord-${Date.now()}`,
+      id: orderId,
       user_id: null,
       stripe_session_id: `cs_demo_${Date.now()}`,
-      total_amount: total,
-      subtotal,
+      total_amount: demoTotal,
+      subtotal: demoSubtotal,
       shipping_cost: shipping,
       status: 'paid',
       email,
+      discount_code: appliedCode,
+      discount_amount: demoDiscountAmount,
       shipping_address: {
         name,
         line1: address.line1,
@@ -89,7 +181,7 @@ export function CheckoutPage({
       updated_at: new Date().toISOString(),
       order_items: items.map((item) => ({
         id: `oi-${Date.now()}-${item.product_variant_id}`,
-        order_id: `ord-${Date.now()}`,
+        order_id: orderId,
         product_variant_id: item.product_variant_id,
         title_at_time: item.title,
         size_at_time: item.size,
@@ -307,6 +399,55 @@ export function CheckoutPage({
               <div className="space-y-6">
                 <div className="p-6 bg-[#F5F0E8] border border-[#0A0A0A]/10">
                   <div className="flex items-center gap-3 mb-4">
+                    <Tag size={18} className="text-[#0A0A0A]" />
+                    <h3 className="text-sm font-medium">Discount code</h3>
+                  </div>
+                  {discountCode ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm text-[#00C853]" style={{ fontFamily: "'Space Mono', monospace" }}>
+                        {discountCode} applied
+                        {discountPercent != null ? ` (−${discountPercent}%)` : ''}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveDiscount}
+                        className="text-xs text-[#64748B] hover:text-[#C41E3A] transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountInput}
+                        onChange={(e) => setDiscountInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            void handleApplyDiscount();
+                          }
+                        }}
+                        className="flex-1 px-4 py-3 border border-[#0A0A0A]/30 focus:border-[#0A0A0A] focus:outline-none text-sm uppercase"
+                        placeholder="DEMO10"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void handleApplyDiscount()}
+                        disabled={discountLoading || !discountInput.trim()}
+                        className="px-4 py-3 border border-[#0A0A0A] text-xs uppercase tracking-wider text-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white transition-all disabled:opacity-50"
+                        style={{ fontFamily: "'Space Mono', monospace" }}
+                      >
+                        {discountLoading ? '…' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {discountError && <p className="text-sm text-[#C41E3A] mt-2">{discountError}</p>}
+                </div>
+
+                <div className="p-6 bg-[#F5F0E8] border border-[#0A0A0A]/10">
+                  <div className="flex items-center gap-3 mb-4">
                     <CreditCard size={20} className="text-[#0A0A0A]" />
                     <h3 className="text-sm font-medium">
                       {stripeEnabled ? 'Stripe Checkout' : 'Demo Payment'}
@@ -333,7 +474,9 @@ export function CheckoutPage({
                   style={{ backgroundColor: '#C41E3A', fontFamily: "'Space Mono', monospace" }}
                 >
                   {paying && <Loader2 size={16} className="animate-spin" />}
-                  {stripeEnabled ? `Pay with Stripe — ${formatPrice(total)}` : `Place Order — ${formatPrice(total)}`}
+                  {stripeEnabled
+                    ? `Pay with Stripe — ${formatPrice(payableTotal)}`
+                    : `Place Order — ${formatPrice(payableTotal)}`}
                 </button>
               </div>
             )}
@@ -368,13 +511,21 @@ export function CheckoutPage({
                   <span className="text-[#64748B]">Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#64748B]">
+                      Discount{discountCode ? ` (${discountCode})` : ''}
+                    </span>
+                    <span className="text-[#00C853]">−{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-[#64748B]">Shipping</span>
                   <span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-[#0A0A0A]/10">
                   <span>Total</span>
-                  <span>{formatPrice(total)}</span>
+                  <span>{formatPrice(payableTotal)}</span>
                 </div>
               </div>
             </div>

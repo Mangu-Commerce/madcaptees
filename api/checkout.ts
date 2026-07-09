@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Stripe from 'stripe';
+import {
+  applyDiscountToSubtotal,
+  proportionallyDiscountItems,
+  validateDiscountCode,
+} from './_lib/discount';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -21,6 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       total,
       successUrl,
       cancelUrl,
+      discountCode,
+      discount,
     } = req.body ?? {};
 
     if (!Array.isArray(items) || items.length === 0 || !email) {
@@ -32,27 +39,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       process.env.NEXT_PUBLIC_SITE_URL ||
       'http://localhost:3000';
 
+    const computedSubtotal = items.reduce(
+      (sum: number, item: { unit_price: number; quantity: number }) =>
+        sum + Number(item.unit_price) * (Number(item.quantity) || 1),
+      0
+    );
+    const baseSubtotal = Number(subtotal) > 0 ? Number(subtotal) : computedSubtotal;
+    const shippingAmount = Math.max(0, Number(shipping) || 0);
+
+    const rawDiscount = discountCode || discount?.code || discount || null;
+    let appliedCode: string | null = null;
+    let discountedSubtotal = baseSubtotal;
+    let discountAmount = 0;
+
+    if (rawDiscount) {
+      const validated = await validateDiscountCode(rawDiscount);
+      if (!validated.valid) {
+        return res.status(400).json({ error: validated.error || 'Invalid discount code' });
+      }
+      appliedCode = validated.code ?? String(rawDiscount).toUpperCase();
+      const applied = applyDiscountToSubtotal(baseSubtotal, validated);
+      discountedSubtotal = applied.discountedSubtotal;
+      discountAmount = applied.discountAmount;
+    }
+
+    const unitPrices =
+      discountAmount > 0
+        ? proportionallyDiscountItems(items, discountedSubtotal)
+        : items.map((item: { unit_price: number }) => Number(item.unit_price));
+
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
-      (item: { title: string; unit_price: number; quantity: number }) => ({
+      (item: { title: string; quantity: number }, index: number) => ({
         price_data: {
           currency: 'usd',
           product_data: { name: item.title },
-          unit_amount: Math.round(Number(item.unit_price) * 100),
+          unit_amount: Math.round(unitPrices[index] * 100),
         },
         quantity: Number(item.quantity) || 1,
       })
     );
 
-    if (Number(shipping) > 0) {
+    if (shippingAmount > 0) {
       lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: { name: 'Shipping' },
-          unit_amount: Math.round(Number(shipping) * 100),
+          unit_amount: Math.round(shippingAmount * 100),
         },
         quantity: 1,
       });
     }
+
+    const finalTotal = Math.round((discountedSubtotal + shippingAmount) * 100) / 100;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -61,9 +99,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success_url: successUrl || `${siteUrl}/checkout?success=1`,
       cancel_url: cancelUrl || `${siteUrl}/cart`,
       metadata: {
-        subtotal: String(subtotal ?? ''),
-        shipping: String(shipping ?? ''),
-        total: String(total ?? ''),
+        subtotal: String(discountedSubtotal),
+        shipping: String(shippingAmount),
+        total: String(finalTotal || total || ''),
+        discount_code: appliedCode || '',
+        discount_amount: String(discountAmount),
         cart_json: JSON.stringify(items).slice(0, 500),
       },
     });

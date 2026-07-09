@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { sendOrderReceipt } from '../_lib/email';
 
 export const config = {
   api: { bodyParser: false },
@@ -59,28 +60,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const total = (session.amount_total ?? 0) / 100;
       const subtotal = Number(session.metadata?.subtotal || total);
       const shippingCost = Number(session.metadata?.shipping || 0);
+      const discountCode = session.metadata?.discount_code || null;
 
-      await supabase.from('orders').insert({
-        stripe_session_id: session.id,
-        stripe_payment_intent_id:
-          typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        total_amount: total,
-        subtotal,
-        shipping_cost: shippingCost,
-        status: 'paid',
-        email,
-        shipping_address: session.shipping_details?.address
-          ? {
-              name: session.shipping_details.name ?? '',
-              line1: session.shipping_details.address.line1 ?? '',
-              line2: session.shipping_details.address.line2 ?? '',
-              city: session.shipping_details.address.city ?? '',
-              state: session.shipping_details.address.state ?? '',
-              zip: session.shipping_details.address.postal_code ?? '',
-              country: session.shipping_details.address.country ?? 'US',
-            }
-          : null,
-      });
+      const { data: inserted, error: insertError } = await supabase
+        .from('orders')
+        .insert({
+          stripe_session_id: session.id,
+          stripe_payment_intent_id:
+            typeof session.payment_intent === 'string' ? session.payment_intent : null,
+          total_amount: total,
+          subtotal,
+          shipping_cost: shippingCost,
+          status: 'paid',
+          email,
+          shipping_address: session.shipping_details?.address
+            ? {
+                name: session.shipping_details.name ?? '',
+                line1: session.shipping_details.address.line1 ?? '',
+                line2: session.shipping_details.address.line2 ?? '',
+                city: session.shipping_details.address.city ?? '',
+                state: session.shipping_details.address.state ?? '',
+                zip: session.shipping_details.address.postal_code ?? '',
+                country: session.shipping_details.address.country ?? 'US',
+              }
+            : null,
+        })
+        .select('id')
+        .maybeSingle();
+
+      if (insertError) {
+        console.error('Failed to insert order:', insertError.message);
+      }
+
+      // Receipt failures must not fail the webhook
+      try {
+        await sendOrderReceipt({
+          to: email,
+          orderTotal: total,
+          orderId: inserted?.id ?? session.id,
+          discountCode,
+        });
+      } catch (err) {
+        console.error('Order receipt send failed:', err);
+      }
     }
   }
 
