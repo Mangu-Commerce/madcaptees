@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
-import { getPublishedProducts } from '@/lib/data';
+import { useCatalog } from '@/contexts/CatalogContext';
 import { ProductCard } from './ProductCard';
 import type { Product, FilterState } from '@/types';
 import { SORT_OPTIONS, PRODUCT_CATEGORIES, THEMES } from '@/types';
@@ -15,7 +15,7 @@ interface ShopPageProps {
 
 export function ShopPage({ filters, onFilterChange, onProductClick, onQuickView, onQuickAdd }: ShopPageProps) {
   const [showFilters, setShowFilters] = useState(false);
-  const products = getPublishedProducts();
+  const { publishedProducts: products, loading } = useCatalog();
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -322,7 +322,9 @@ export function ShopPage({ filters, onFilterChange, onProductClick, onQuickView,
 
         {/* Product Grid */}
         <div className="flex-1">
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-20 text-[#64748B]">Loading products...</div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <Search size={48} className="mx-auto text-[#0A0A0A]/15 mb-4" />
               <p className="text-lg text-[#64748B] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>

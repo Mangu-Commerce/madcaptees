@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Plus, Minus, Truck, Clock, Share2, Heart, ChevronLeft } from 'lucide-react';
 import type { Product, CartItem, AppView } from '@/types';
 import { PRODUCT_COLORS, PRODUCT_SIZES, FREE_SHIPPING_THRESHOLD } from '@/types';
-import { formatPrice, getPublishedProducts } from '@/lib/data';
+import { formatPrice } from '@/lib/data';
+import { useCatalog } from '@/contexts/CatalogContext';
+import { productImageUrl } from '@/lib/placeholders';
 
 interface ProductDetailProps {
   product: Product;
@@ -48,8 +50,8 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
   };
 
   // Related products (same theme, excluding current)
-  const allProducts = getPublishedProducts();
-  const relatedProducts = allProducts
+  const { publishedProducts } = useCatalog();
+  const relatedProducts = publishedProducts
     .filter(p => p.id !== product.id && p.themes.some(t => product.themes.includes(t)))
     .slice(0, 4);
 
@@ -69,7 +71,7 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
         {/* Image */}
         <div className="bg-[#F5F0E8] aspect-[3/4] overflow-hidden">
           <img
-            src={primaryImage?.url}
+            src={productImageUrl(primaryImage?.url, product.title)}
             alt={primaryImage?.alt_text || product.title}
             className="w-full h-full object-cover"
           />

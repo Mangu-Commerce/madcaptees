@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Package, DollarSign, ShoppingCart, TrendingUp, Plus, ChevronLeft, LogOut, BarChart3, Search, Loader2 } from 'lucide-react';
+import { Package, DollarSign, ShoppingCart, TrendingUp, Plus, ChevronLeft, LogOut, BarChart3, Search, Loader2, Upload } from 'lucide-react';
 import type { Product, AppView, OrderStatus } from '@/types';
 import { formatPrice, generateSlug } from '@/lib/data';
+import { useAuth } from '@/hooks/useAuth';
+import { useCatalog } from '@/contexts/CatalogContext';
+import { hasSupabaseConfig } from '@/lib/supabase';
+import { AdminLogin } from '@/sections/AdminLogin';
 import {
   fetchProducts,
   fetchOrders,
@@ -10,6 +14,8 @@ import {
   deleteProduct as deleteProductApi,
   toggleProductPublished as toggleProductPublishedApi,
   updateOrderStatus as updateOrderStatusApi,
+  uploadProductImage,
+  replaceProductImages,
 } from '@/lib/api';
 
 interface AdminDashboardProps {
@@ -17,6 +23,8 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
+  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
+  const { refresh: refreshCatalog } = useCatalog();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -29,6 +37,8 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [productsLoading, setProductsLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Load data from Supabase on mount
   useEffect(() => {
@@ -73,6 +83,8 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   const startNewProduct = () => {
     setEditingProduct(null);
+    setImageFiles([]);
+    setSaveError(null);
     setFormData({
       title: '', slug: '', description: '', base_price: 25, sale_price: null,
       category: 'tees', tags: [], themes: [], published: true,
@@ -83,6 +95,8 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   const startEdit = (product: Product) => {
     setEditingProduct(product);
+    setImageFiles([]);
+    setSaveError(null);
     setFormData({ ...product });
     setShowForm(true);
   };
@@ -90,13 +104,39 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const handleSave = async () => {
     if (!formData.title || !formData.base_price) return;
     setActionLoading('save');
+    setSaveError(null);
     try {
+      const slug = formData.slug || generateSlug(formData.title!);
+
       if (editingProduct) {
-        await updateProductApi(editingProduct.id, { ...formData });
+        await updateProductApi(editingProduct.id, { ...formData, slug });
+        if (imageFiles.length > 0) {
+          const uploaded = await Promise.all(
+            imageFiles.map((file) => uploadProductImage(file, slug))
+          );
+          const merged = [
+            ...editingProduct.product_images.map((img) => ({
+              url: img.url,
+              alt_text: img.alt_text,
+              is_primary: img.is_primary,
+              sort_order: img.sort_order,
+            })),
+            ...uploaded.map((url, i) => ({
+              url,
+              alt_text: formData.title ?? null,
+              is_primary: editingProduct.product_images.length === 0 && i === 0,
+              sort_order: editingProduct.product_images.length + i,
+            })),
+          ];
+          await replaceProductImages(editingProduct.id, merged);
+        }
       } else {
+        const uploaded = await Promise.all(
+          imageFiles.map((file) => uploadProductImage(file, slug))
+        );
         const newProduct = {
           title: formData.title!,
-          slug: formData.slug || generateSlug(formData.title!),
+          slug,
           description: formData.description ?? null,
           base_price: formData.base_price!,
           sale_price: formData.sale_price ?? null,
@@ -107,7 +147,12 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           featured: formData.featured ?? false,
           best_seller: formData.best_seller ?? false,
           made_to_order: formData.made_to_order ?? true,
-          product_images: [],
+          product_images: uploaded.map((url, i) => ({
+            url,
+            alt_text: formData.title ?? null,
+            is_primary: i === 0,
+            sort_order: i,
+          })),
           product_variants: [
             { size: 'S', color: 'Black', sku: null, pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
             { size: 'M', color: 'Black', sku: null, pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -118,10 +163,13 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         await createProduct(newProduct);
       }
       await loadProducts();
+      await refreshCatalog();
       setShowForm(false);
       setEditingProduct(null);
+      setImageFiles([]);
     } catch (err) {
       console.error('Save product failed:', err);
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
     } finally {
       setActionLoading(null);
     }
@@ -182,6 +230,38 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
+
+  if (hasSupabaseConfig) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-[#64748B]" />
+        </div>
+      );
+    }
+    if (!user) {
+      return <AdminLogin />;
+    }
+    if (!isAdmin) {
+      return (
+        <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white border border-[#0A0A0A]/15 p-8 text-center">
+            <h1 className="text-2xl mb-4" style={{ fontFamily: "'Anton', sans-serif" }}>ACCESS DENIED</h1>
+            <p className="text-sm text-[#64748B] mb-6">
+              This account is not an admin. Run the SQL in docs/OPERATOR_TODO.md to grant access.
+            </p>
+            <button
+              onClick={() => signOut()}
+              className="px-6 py-3 text-white text-sm uppercase tracking-wider"
+              style={{ backgroundColor: '#C41E3A', fontFamily: "'Space Mono', monospace" }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
 
   if (showForm) {
     return (
@@ -300,6 +380,35 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               </div>
             </div>
 
+            {/* Images */}
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-[#64748B] mb-2" style={{ fontFamily: "'Space Mono', monospace" }}>
+                Product Images
+              </label>
+              {editingProduct && editingProduct.product_images.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {editingProduct.product_images.map((img) => (
+                    <img key={img.id} src={img.url} alt="" className="w-20 h-20 object-cover border border-[#0A0A0A]/15" />
+                  ))}
+                </div>
+              )}
+              <label className="flex items-center justify-center gap-2 w-full py-8 border-2 border-dashed border-[#0A0A0A]/20 cursor-pointer hover:border-[#C41E3A] transition-colors">
+                <Upload size={18} className="text-[#64748B]" />
+                <span className="text-sm text-[#64748B]" style={{ fontFamily: "'Space Mono', monospace" }}>
+                  {imageFiles.length > 0 ? `${imageFiles.length} file(s) selected` : 'Upload images (JPG, PNG, WebP)'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
+                />
+              </label>
+            </div>
+
+            {saveError && <p className="text-sm text-[#C41E3A]">{saveError}</p>}
+
             {/* Toggles */}
             <div className="flex flex-wrap gap-4">
               {[
@@ -367,14 +476,26 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               ))}
             </nav>
           </div>
-          <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors"
-            style={{ fontFamily: "'Space Mono', monospace" }}
-          >
-            <LogOut size={14} />
-            Exit Admin
-          </button>
+          <div className="flex items-center gap-4">
+            {hasSupabaseConfig && user && (
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors"
+                style={{ fontFamily: "'Space Mono', monospace" }}
+              >
+                <LogOut size={14} />
+                Sign Out
+              </button>
+            )}
+            <button
+              onClick={() => onNavigate('home')}
+              className="flex items-center gap-2 text-xs text-white/50 hover:text-white transition-colors"
+              style={{ fontFamily: "'Space Mono', monospace" }}
+            >
+              <LogOut size={14} />
+              Exit Admin
+            </button>
+          </div>
         </div>
       </div>
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Product } from '@/types';
-import { fetchProducts } from '@/lib/api';
+import { fetchPublishedProducts } from '@/lib/api';
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,7 +15,7 @@ export function useProducts() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchProducts();
+      const data = await fetchPublishedProducts();
       setProducts(data);
     } catch (err: any) {
       setError(err?.message || 'Failed to load products');

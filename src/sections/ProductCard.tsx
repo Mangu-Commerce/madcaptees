@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Product } from '@/types';
 import { formatPrice } from '@/lib/data';
+import { productImageUrl } from '@/lib/placeholders';
 import { Eye, ShoppingBag } from 'lucide-react';
 
 interface ProductCardProps {
@@ -31,7 +32,7 @@ export function ProductCard({ product, onProductClick, onQuickView, onQuickAdd }
           className="w-full h-full"
         >
           <img
-            src={primaryImage?.url}
+            src={productImageUrl(primaryImage?.url, product.title)}
             alt={primaryImage?.alt_text || product.title}
             className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
