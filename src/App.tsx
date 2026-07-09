@@ -2,7 +2,7 @@
 // Madcap Tees — Main Application
 // ============================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import type { AppView, FilterState, CartItem, Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/useToast';
 import { useCatalog } from '@/contexts/CatalogContext';
 import { formatPrice } from '@/lib/data';
 import { getViewFromPath, viewToPath } from '@/lib/routes';
+import { applyPageSeo, productJsonLd } from '@/lib/seo';
 import { AnnouncementBar } from '@/sections/AnnouncementBar';
 import { Navbar } from '@/sections/Navbar';
 import { Hero } from '@/sections/Hero';
@@ -120,6 +121,40 @@ function App() {
 
   const selectedProduct = catalog.getProductBySlug(selectedProductSlug);
   const checkoutSuccess = searchParams.get('success') === '1';
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+      applyPageSeo({ title: 'Admin', path: '/admin', noIndex: true });
+      return;
+    }
+    if (currentView === 'product' && selectedProduct) {
+      applyPageSeo({
+        title: selectedProduct.title,
+        description: selectedProduct.description ?? `${selectedProduct.title} — made to order. Ships in ~7 days.`,
+        path: `/products/${selectedProduct.slug}`,
+        image: selectedProduct.product_images[0]?.url,
+        jsonLd: productJsonLd(selectedProduct),
+      });
+      return;
+    }
+    if (currentView === 'shop') {
+      applyPageSeo({
+        title: 'Shop All Graphic Tees & Apparel',
+        description: 'Browse funny graphic t-shirts, hoodies, hats, and more. Filter by theme or search your favorite designs.',
+        path: '/shop',
+      });
+      return;
+    }
+    if (currentView === 'cart') {
+      applyPageSeo({ title: 'Your Cart', path: '/cart', noIndex: true });
+      return;
+    }
+    if (currentView === 'checkout') {
+      applyPageSeo({ title: 'Checkout', path: '/checkout', noIndex: true });
+      return;
+    }
+    applyPageSeo({ path: '/' });
+  }, [currentView, selectedProduct, location.pathname]);
 
   if (location.pathname.startsWith('/admin')) {
     return <AdminDashboard onNavigate={handleNavigate} />;

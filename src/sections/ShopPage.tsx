@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
 import { useCatalog } from '@/contexts/CatalogContext';
+import { CategoryIconFilters } from '@/sections/CategoryIconFilters';
 import { ProductCard } from './ProductCard';
 import type { Product, FilterState } from '@/types';
 import { SORT_OPTIONS, PRODUCT_CATEGORIES, THEMES } from '@/types';
@@ -45,6 +46,12 @@ export function ShopPage({ filters, onFilterChange, onProductClick, onQuickView,
     }
 
     switch (filters.sort) {
+      case 'best-selling':
+        result.sort((a, b) => {
+          if (a.best_seller !== b.best_seller) return a.best_seller ? -1 : 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+        break;
       case 'price-low':
         result.sort((a, b) => (a.sale_price || a.base_price) - (b.sale_price || b.base_price));
         break;
@@ -89,6 +96,12 @@ export function ShopPage({ filters, onFilterChange, onProductClick, onQuickView,
           {filters.search && <span className="ml-2 text-[#C41E3A]">matching &ldquo;{filters.search}&rdquo;</span>}
         </p>
       </div>
+
+      <CategoryIconFilters
+        products={products}
+        activeCategory={filters.category}
+        onSelect={(category) => onFilterChange({ category })}
+      />
 
       {/* SEO Description */}
       {filters.theme === 'best-sellers' && (
