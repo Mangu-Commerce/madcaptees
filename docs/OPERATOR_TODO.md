@@ -9,10 +9,24 @@ Copy this checklist and work top to bottom. Check each box when done.
 ## Already done for you
 
 - [x] Supabase project `madcap-tees` (`mggzocnsacpzgakpymrt`)
-- [x] Migrations 001–003 + storage bucket + RLS
+- [x] Migrations 001–004 + storage bucket + RLS (`is_admin()` recursion fix)
 - [x] Catalog seeded (8 products, 64 variants, `DEMO10`)
 - [x] Vercel project linked to `redinc23/madcaptees`
 - [x] Deploy config fixed (`outputDirectory: dist`, Vite framework)
+- [x] Preview deploy **READY** on branch `cursor/phase2-live-b82e` (PR #7)
+
+**Live preview (SSO-gated until step 0):**  
+https://madcaptees-git-cursor-phase2-live-b82e-redinc23s-projects.vercel.app
+
+---
+
+## 0. Make the site public (2 min) — required
+
+Vercel Authentication is currently on for **all** URLs (including production). Until you turn it off, shoppers hit a Vercel login wall.
+
+1. Vercel → **madcaptees** → Settings → **Deployment Protection**
+2. Set **Vercel Authentication** to **Off** (or Standard Protection → only Preview, not Production)
+3. Save
 
 ---
 
