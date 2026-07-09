@@ -2,40 +2,34 @@
 
 | Metric | Value |
 |--------|-------|
-| P0 code blockers | **0 open** |
-| P1 polish | **0 open** |
-| Operator-only (deploy) | **See docs/OPERATOR_TODO.md** |
-| Launch readiness | **~95%** — deploy + your keys |
-| Tracking branch | `cursor/p1-polish-b82e` |
+| P0–P1 code | **DONE** |
+| Phase 2 code | **DONE** (this branch) |
+| Infrastructure | **IN PROGRESS** — Supabase `madcap-tees` provisioning |
+| Operator remaining | Stripe keys + Vercel env + admin user |
+| Launch readiness | **~98%** |
 
-> **Your checklist:** `docs/OPERATOR_TODO.md`
-
----
-
-## P1 — All code complete
-
-| ID | Item | Status |
-|----|------|--------|
-| P1.1 | Shareable URLs | **DONE** |
-| P1.2 | JSON-LD + sitemap + per-page meta | **DONE** |
-| P1.3 | Product gallery (thumbnails, zoom, swipe) | **DONE** |
-| P1.4 | Category icon filters | **DONE** |
-| P1.5 | Admin analytics chart | **DONE** |
-| P1.6 | Auto SVG placeholder | **DONE** |
+> **Your checklist:** `docs/OPERATOR_TODO.md`  
+> **Supabase project:** `madcap-tees` (`mggzocnsacpzgakpymrt`, us-east-1)
 
 ---
 
-## Operator-only — **YOUR TO-DO**
+## Done in code
 
-See **`docs/OPERATOR_TODO.md`**
+| Phase | Items |
+|-------|-------|
+| Toolkit | env validation, blockers, agent playbook |
+| P0 | catalog ↔ Supabase, admin auth, image upload, Stripe API |
+| P1 | SEO/sitemap, gallery, category filters, admin chart |
+| Phase 2 | accounts + order history, wishlist, Resend receipts, discount codes, Instagram feed |
 
 ---
 
-## Phase 2 (future)
+## Operator remaining (bring-alive)
 
-- Customer accounts & order history
-- Wishlist (UI stub exists on product page)
-- Instagram feed embed
-- Email receipts (Resend)
-- Discount codes
-- Printful/Printify fulfillment
+1. Wait for Supabase project healthy (agent applying migrations + seed)
+2. Add **Stripe** test keys to Vercel env (and `.env.local`)
+3. Create your admin user in Supabase Auth → `is_admin = true`
+4. Point Stripe webhook at `https://YOUR-URL/api/stripe/webhook`
+5. Smoke test checkout with `4242…`
+
+Optional: Resend API key for email receipts; Printful later.

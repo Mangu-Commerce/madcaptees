@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "validate-env": "tsx scripts/validate-env.ts",
     "validate-env:strict": "VALIDATE_ENV_STRICT=1 tsx scripts/validate-env.ts --strict",
-    "launch-readiness": "bash scripts/launch-readiness.sh"
+    "launch-readiness": "bash scripts/launch-readiness.sh",
+    "seed": "tsx scripts/seed-products.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
