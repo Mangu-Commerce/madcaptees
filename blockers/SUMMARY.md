@@ -41,12 +41,10 @@
 ## Operator remaining (bring-alive)
 
 1. **Disable Vercel Authentication** (Settings → Deployment Protection → Off) so the storefront is public
-2. In Vercel → Project → Settings → Environment Variables, add:
-   - `VITE_SUPABASE_URL` = `https://mggzocnsacpzgakpymrt.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` = (Supabase → Settings → API → anon)
-   - `VITE_SITE_URL` = `https://madcaptees-redinc23s-projects.vercel.app` (update after first green prod deploy)
+2. In Vercel → Project → Settings → Environment Variables, add **server secrets**:
    - `SUPABASE_SERVICE_ROLE_KEY` = (service_role — never commit)
    - Stripe: `VITE_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+   - (Client Supabase URL/anon already baked via `.env.production`)
 3. Create admin user in Supabase Auth → `UPDATE profiles SET is_admin = true WHERE email = '...'`
 4. Stripe webhook → `https://YOUR-URL/api/stripe/webhook` (`checkout.session.completed`)
 5. Merge PR #7 → redeploy production → smoke test with card `4242…`

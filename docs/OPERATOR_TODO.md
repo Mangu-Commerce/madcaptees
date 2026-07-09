@@ -30,19 +30,18 @@ Vercel Authentication is currently on for **all** URLs (including production). U
 
 ---
 
-## 1. Paste env vars into Vercel (10 min)
+## 1. Paste server secrets into Vercel (10 min)
 
-Vercel → **madcaptees** → Settings → Environment Variables → add for Production + Preview:
+Client Supabase URL/anon key are already in `.env.production` (baked into the Vite build).  
+You still must add **server-only** secrets in Vercel → **madcaptees** → Settings → Environment Variables (Production + Preview):
 
 | Variable | Value |
 |----------|-------|
-| `VITE_SUPABASE_URL` | `https://mggzocnsacpzgakpymrt.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → **anon** `public` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Same page → **service_role** (never commit / never expose client-side) |
-| `VITE_SITE_URL` | `https://madcaptees-redinc23s-projects.vercel.app` (or your custom domain) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API → **service_role** (never commit / never expose client-side) |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | [Stripe](https://dashboard.stripe.com/apikeys) → `pk_test_...` |
 | `STRIPE_SECRET_KEY` | Stripe → `sk_test_...` |
 | `STRIPE_WEBHOOK_SECRET` | Step 3 below (`whsec_...`) |
+| `VITE_SITE_URL` | Override if using a custom domain |
 
 Optional later: `RESEND_API_KEY`, `PRINTFUL_API_KEY`.
 

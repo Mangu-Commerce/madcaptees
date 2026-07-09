@@ -4,7 +4,7 @@ import {
   applyDiscountToSubtotal,
   proportionallyDiscountItems,
   validateDiscountCode,
-} from './_lib/discount';
+} from './_lib/discount.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
