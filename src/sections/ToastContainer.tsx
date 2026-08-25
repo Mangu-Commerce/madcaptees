@@ -1,3 +1,5 @@
+'use client';
+
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import type { Toast } from '@/hooks/useToast';
 

@@ -1,9 +1,13 @@
+'use client';
+
 import type { CartItem } from '@/types';
 
-const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+function getSiteUrl(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+}
 
 export function isStripeCheckoutEnabled(): boolean {
-  return !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  return !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 }
 
 export async function startStripeCheckout(params: {
@@ -21,6 +25,7 @@ export async function startStripeCheckout(params: {
   shipping: number;
   total: number;
 }): Promise<void> {
+  const siteUrl = getSiteUrl();
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

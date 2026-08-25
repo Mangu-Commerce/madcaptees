@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Search, User, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import type { AppView, FilterState } from '@/types';

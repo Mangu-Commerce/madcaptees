@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Instagram, Twitter, Facebook, Mail, ArrowRight, MapPin } from 'lucide-react';
 import type { AppView, FilterState } from '@/types';

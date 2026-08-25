@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Package, DollarSign, ShoppingCart, TrendingUp, Plus, ChevronLeft, LogOut, BarChart3, Search, Loader2, Upload } from 'lucide-react';
 import type { Product, AppView, OrderStatus } from '@/types';

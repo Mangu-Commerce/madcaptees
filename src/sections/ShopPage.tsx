@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useMemo } from 'react';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
 import { useCatalog } from '@/contexts/CatalogContext';

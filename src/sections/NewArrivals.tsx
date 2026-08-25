@@ -1,3 +1,5 @@
+'use client';
+
 import { useCatalog } from '@/contexts/CatalogContext';
 import { ProductCard } from './ProductCard';
 import type { Product, AppView, FilterState } from '@/types';

@@ -1,3 +1,5 @@
+'use client';
+
 import { COLLECTIONS } from '@/lib/data';
 import type { AppView, FilterState } from '@/types';
 

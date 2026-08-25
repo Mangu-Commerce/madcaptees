@@ -1,3 +1,5 @@
+'use client';
+
 import { X, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import type { CartItem, AppView } from '@/types';
 import { formatPrice } from '@/lib/data';

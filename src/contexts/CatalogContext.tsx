@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { Product } from '@/types';
 import { useProducts } from '@/hooks/useProducts';
