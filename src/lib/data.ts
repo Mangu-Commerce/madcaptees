@@ -19,7 +19,7 @@ import productExit82 from '@/assets/product-exit-82.jpg';
 export const HERO_SLIDES = [
   {
     id: '1',
-    image: hero1,
+    image: hero1.src,
     title: 'MAD AS HELL',
     subtitle: '& TWICE AS FUNNY',
     cta: 'SHOP NOW',
@@ -27,7 +27,7 @@ export const HERO_SLIDES = [
   },
   {
     id: '2',
-    image: hero2,
+    image: hero2.src,
     title: 'NEW ARRIVALS',
     subtitle: 'FRESH DROPS WEEKLY',
     cta: 'SHOP NEW',
@@ -35,7 +35,7 @@ export const HERO_SLIDES = [
   },
   {
     id: '3',
-    image: collectionBestSellers,
+    image: collectionBestSellers.src,
     title: 'BEST SELLERS',
     subtitle: 'THE ONES EVERYONE LOVES',
     cta: 'SHOP BEST',
@@ -49,35 +49,35 @@ export const COLLECTIONS: Collection[] = [
     name: 'New Arrivals',
     slug: 'new-arrivals',
     description: 'Fresh drops, trending designs, and brand-new takes on pop culture.',
-    image_url: collectionNewArrivals,
+    image_url: collectionNewArrivals.src,
   },
   {
     id: '2',
     name: 'Best Sellers',
     slug: 'best-sellers',
     description: 'The most-loved graphic tees, hoodies, and hats that fans keep coming back to.',
-    image_url: collectionBestSellers,
+    image_url: collectionBestSellers.src,
   },
   {
     id: '3',
     name: 'NJ Flavor',
     slug: 'nj-flavor',
     description: 'Garden State pride, pork roll supremacy, and shore-town humor.',
-    image_url: collectionNJ,
+    image_url: collectionNJ.src,
   },
   {
     id: '4',
     name: 'Satirical',
     slug: 'satirical',
     description: 'Mad Magazine-style humor, conspiracy theories, and social commentary.',
-    image_url: collectionSatirical,
+    image_url: collectionSatirical.src,
   },
   {
     id: '5',
     name: 'Retro',
     slug: 'retro',
     description: '80s/90s nostalgia, chrome typography, and vintage gaming vibes.',
-    image_url: collectionRetro,
+    image_url: collectionRetro.src,
   },
 ];
 
@@ -99,7 +99,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-01T00:00:00Z',
     updated_at: '2026-05-01T00:00:00Z',
     product_images: [
-      { id: 'img-1-1', product_id: 'prod-1', url: productMadAsHell, alt_text: 'Mad As Hell Tee - Black with jester graphic', is_primary: true, sort_order: 0 },
+      { id: 'img-1-1', product_id: 'prod-1', url: productMadAsHell.src, alt_text: 'Mad As Hell Tee - Black with jester graphic', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-1-1', product_id: 'prod-1', size: 'S', color: 'Black', sku: 'MAH-BLK-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -129,7 +129,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-05T00:00:00Z',
     updated_at: '2026-05-05T00:00:00Z',
     product_images: [
-      { id: 'img-2-1', product_id: 'prod-2', url: productBennies, alt_text: 'Bennies Go Home Tee - White with surf graphic', is_primary: true, sort_order: 0 },
+      { id: 'img-2-1', product_id: 'prod-2', url: productBennies.src, alt_text: 'Bennies Go Home Tee - White with surf graphic', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-2-1', product_id: 'prod-2', size: 'S', color: 'White', sku: 'BGH-WHT-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -157,7 +157,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-10T00:00:00Z',
     updated_at: '2026-05-10T00:00:00Z',
     product_images: [
-      { id: 'img-3-1', product_id: 'prod-3', url: productDoomScroll, alt_text: 'Doom Scroll Champion Hoodie - Black with pixel art graphic', is_primary: true, sort_order: 0 },
+      { id: 'img-3-1', product_id: 'prod-3', url: productDoomScroll.src, alt_text: 'Doom Scroll Champion Hoodie - Black with pixel art graphic', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-3-1', product_id: 'prod-3', size: 'S', color: 'Black', sku: 'DSC-BLK-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -184,7 +184,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-12T00:00:00Z',
     updated_at: '2026-05-12T00:00:00Z',
     product_images: [
-      { id: 'img-4-1', product_id: 'prod-4', url: productExit82, alt_text: 'Exit 82 No Regrets Tee - Heather grey with highway sign', is_primary: true, sort_order: 0 },
+      { id: 'img-4-1', product_id: 'prod-4', url: productExit82.src, alt_text: 'Exit 82 No Regrets Tee - Heather grey with highway sign', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-4-1', product_id: 'prod-4', size: 'S', color: 'Heather Grey', sku: 'E82-HG-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -211,7 +211,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-15T00:00:00Z',
     updated_at: '2026-05-15T00:00:00Z',
     product_images: [
-      { id: 'img-5-1', product_id: 'prod-5', url: collectionNJ, alt_text: 'Pork Roll Supremacy Tee - NJ diner themed', is_primary: true, sort_order: 0 },
+      { id: 'img-5-1', product_id: 'prod-5', url: collectionNJ.src, alt_text: 'Pork Roll Supremacy Tee - NJ diner themed', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-5-1', product_id: 'prod-5', size: 'S', color: 'White', sku: 'PRS-WHT-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -238,7 +238,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-18T00:00:00Z',
     updated_at: '2026-05-18T00:00:00Z',
     product_images: [
-      { id: 'img-6-1', product_id: 'prod-6', url: collectionSatirical, alt_text: 'Conspiracy Theories and Chill Tee - UFO graphic', is_primary: true, sort_order: 0 },
+      { id: 'img-6-1', product_id: 'prod-6', url: collectionSatirical.src, alt_text: 'Conspiracy Theories and Chill Tee - UFO graphic', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-6-1', product_id: 'prod-6', size: 'M', color: 'Black', sku: 'CTC-BLK-M', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -264,7 +264,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-20T00:00:00Z',
     updated_at: '2026-05-20T00:00:00Z',
     product_images: [
-      { id: 'img-7-1', product_id: 'prod-7', url: collectionRetro, alt_text: 'Radical Retro Tee - Chrome 3D lettering with skateboard', is_primary: true, sort_order: 0 },
+      { id: 'img-7-1', product_id: 'prod-7', url: collectionRetro.src, alt_text: 'Radical Retro Tee - Chrome 3D lettering with skateboard', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-7-1', product_id: 'prod-7', size: 'S', color: 'Black', sku: 'RAD-BLK-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -290,7 +290,7 @@ export const SEEDED_PRODUCTS: Product[] = [
     created_at: '2026-05-22T00:00:00Z',
     updated_at: '2026-05-22T00:00:00Z',
     product_images: [
-      { id: 'img-8-1', product_id: 'prod-8', url: collectionNewArrivals, alt_text: 'I Woke Up Like This Tee - Cat with crown and sunglasses', is_primary: true, sort_order: 0 },
+      { id: 'img-8-1', product_id: 'prod-8', url: collectionNewArrivals.src, alt_text: 'I Woke Up Like This Tee - Cat with crown and sunglasses', is_primary: true, sort_order: 0 },
     ],
     product_variants: [
       { id: 'var-8-1', product_id: 'prod-8', size: 'S', color: 'White', sku: 'WUL-WHT-S', pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
