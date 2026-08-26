@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard, Check, Loader2 } from 'lucide-react';
 import type { CartItem, AppView } from '@/types';

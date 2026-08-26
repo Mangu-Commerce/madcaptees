@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Instagram, Twitter, Facebook, Mail, ArrowRight, MapPin } from 'lucide-react';
 import type { AppView, FilterState } from '@/types';
@@ -70,7 +72,7 @@ export function Footer({ onNavigate, onFilterChange }: FooterProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <img src={logo} alt="Madcap Tees" className="h-9 w-auto mb-4 brightness-0 invert" />
+            <img src={logo.src} alt="Madcap Tees" className="h-9 w-auto mb-4 brightness-0 invert" />
             <p className="text-[13px] text-white/50 mb-5 max-w-xs leading-relaxed" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Mad as hell and twice as funny. Original satirical graphic apparel designed in New Jersey. Made to order, shipped with attitude.
             </p>

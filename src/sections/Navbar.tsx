@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Search, User, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import type { AppView, FilterState } from '@/types';
@@ -116,7 +118,7 @@ export function Navbar({ cartCount, onNavigate, onOpenCart, onFilterChange }: Na
             onClick={() => { onNavigate('home'); handleNavClick(); }}
             className="flex-shrink-0 transition-transform hover:scale-105 duration-200"
           >
-            <img src={logo} alt="Madcap Tees" className="h-9 lg:h-11 w-auto object-contain" />
+            <img src={logo.src} alt="Madcap Tees" className="h-9 lg:h-11 w-auto object-contain" />
           </button>
 
           {/* Right Nav - Desktop */}

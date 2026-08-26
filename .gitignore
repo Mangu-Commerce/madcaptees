@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Next.js build output
+.next
+out
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
 # Environment (never commit secrets)
 .env
 .env.local
