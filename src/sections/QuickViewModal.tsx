@@ -5,6 +5,8 @@ import { X, Plus, Minus } from 'lucide-react';
 import type { Product, CartItem } from '@/types';
 import { PRODUCT_COLORS, PRODUCT_SIZES } from '@/types';
 import { formatPrice } from '@/lib/data';
+import { productImageUrl } from '@/lib/placeholders';
+import { getGalleryImages } from '@/lib/productImages';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -21,6 +23,7 @@ export function QuickViewModal({ product, onClose, onAddToCart, onProductClick }
   if (!product) return null;
 
   const primaryImage = product.product_images.find(i => i.is_primary) || product.product_images[0];
+  const leadImage = getGalleryImages(product)[0];
   const hasSale = product.sale_price !== null && product.sale_price < product.base_price;
   const currentPrice = hasSale ? product.sale_price! : product.base_price;
 
@@ -63,11 +66,11 @@ export function QuickViewModal({ product, onClose, onAddToCart, onProductClick }
         </button>
 
         <div className="grid md:grid-cols-2 gap-0">
-          {/* Image */}
+          {/* Image — same lead shot as the product page (model first) */}
           <div className="aspect-[3/4] bg-[#F5F0E8]">
             <img
-              src={primaryImage?.url}
-              alt={primaryImage?.alt_text || product.title}
+              src={productImageUrl(leadImage?.url, product.title)}
+              alt={leadImage?.alt_text || product.title}
               className="w-full h-full object-cover"
             />
           </div>

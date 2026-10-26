@@ -7,6 +7,8 @@ import { PRODUCT_COLORS, PRODUCT_SIZES, FREE_SHIPPING_THRESHOLD } from '@/types'
 import { formatPrice } from '@/lib/data';
 import { useCatalog } from '@/contexts/CatalogContext';
 import { productImageUrl } from '@/lib/placeholders';
+import { getDesignImage } from '@/lib/productImages';
+import { ProductGallery } from './ProductGallery';
 
 interface ProductDetailProps {
   product: Product;
@@ -70,14 +72,8 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
       </button>
 
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Image */}
-        <div className="bg-[#F5F0E8] aspect-[3/4] overflow-hidden">
-          <img
-            src={productImageUrl(primaryImage?.url, product.title)}
-            alt={primaryImage?.alt_text || product.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* Gallery: model first, then flat mockup and design */}
+        <ProductGallery product={product} />
 
         {/* Info */}
         <div className="flex flex-col">
@@ -231,11 +227,11 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
                 onClick={() => onNavigate('product', p.slug)}
                 className="group text-left"
               >
-                <div className="aspect-[3/4] overflow-hidden border border-[#0A0A0A]/15 mb-3">
+                <div className="aspect-square overflow-hidden border border-[#0A0A0A]/15 mb-3">
                   <img
-                    src={p.product_images[0]?.url}
+                    src={productImageUrl(getDesignImage(p)?.url, p.title)}
                     alt={p.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover object-[50%_40%] transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
                 <h4 className="text-sm font-medium text-[#0A0A0A] group-hover:opacity-70 transition-opacity" style={{ fontFamily: "'DM Sans', sans-serif" }}>

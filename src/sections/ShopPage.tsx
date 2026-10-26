@@ -344,7 +344,7 @@ export function ShopPage({ filters, onFilterChange, onProductClick, onQuickView,
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-6 lg:gap-x-5 lg:gap-y-8">
               {filteredProducts.map((product, index) => (
                 <div
                   key={product.id}

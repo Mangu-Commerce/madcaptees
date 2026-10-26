@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Package, DollarSign, ShoppingCart, TrendingUp, Plus, ChevronLeft, LogOut, BarChart3, Search, Loader2, Upload } from 'lucide-react';
-import type { Product, AppView, OrderStatus } from '@/types';
+import type { Product, AppView, OrderStatus, ImageType } from '@/types';
+import { IMAGE_TYPES } from '@/types';
 import { formatPrice, generateSlug } from '@/lib/data';
 import { useAuth } from '@/hooks/useAuth';
 import { useCatalog } from '@/contexts/CatalogContext';
@@ -40,6 +41,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageType, setImageType] = useState<ImageType>('flat');
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Load data from Supabase on mount
@@ -86,6 +88,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const startNewProduct = () => {
     setEditingProduct(null);
     setImageFiles([]);
+    setImageType('flat');
     setSaveError(null);
     setFormData({
       title: '', slug: '', description: '', base_price: 25, sale_price: null,
@@ -98,6 +101,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const startEdit = (product: Product) => {
     setEditingProduct(product);
     setImageFiles([]);
+    setImageType('flat');
     setSaveError(null);
     setFormData({ ...product });
     setShowForm(true);
@@ -122,12 +126,14 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               alt_text: img.alt_text,
               is_primary: img.is_primary,
               sort_order: img.sort_order,
+              image_type: img.image_type,
             })),
             ...uploaded.map((url, i) => ({
               url,
               alt_text: formData.title ?? null,
               is_primary: editingProduct.product_images.length === 0 && i === 0,
               sort_order: editingProduct.product_images.length + i,
+              image_type: imageType,
             })),
           ];
           await replaceProductImages(editingProduct.id, merged);
@@ -154,6 +160,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             alt_text: formData.title ?? null,
             is_primary: i === 0,
             sort_order: i,
+            image_type: imageType,
           })),
           product_variants: [
             { size: 'S', color: 'Black', sku: null, pod_variant_id: null, price_adjustment: 0, stock: null, available: true },
@@ -388,12 +395,31 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 Product Images
               </label>
               {editingProduct && editingProduct.product_images.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-3 mb-3">
                   {editingProduct.product_images.map((img) => (
-                    <img key={img.id} src={img.url} alt="" className="w-20 h-20 object-cover border border-[#0A0A0A]/15" />
+                    <div key={img.id} className="w-20">
+                      <img src={img.url} alt="" className="w-20 h-20 object-cover border border-[#0A0A0A]/15" />
+                      <p className="mt-1 text-[10px] uppercase text-[#64748B] text-center" style={{ fontFamily: "'Space Mono', monospace" }}>
+                        {img.image_type ?? 'flat'}
+                      </p>
+                    </div>
                   ))}
                 </div>
               )}
+              <p className="text-xs text-[#64748B] mb-2" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Shop grid shows the Design art; the product page shows the Model photo first, then the flat mockup and design.
+              </p>
+              <select
+                value={imageType}
+                onChange={(e) => setImageType(e.target.value as ImageType)}
+                className="w-full mb-2 px-3 py-2.5 border border-[#0A0A0A]/30 text-sm bg-white focus:border-[#0A0A0A] focus:outline-none"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                aria-label="What the uploaded images show"
+              >
+                {IMAGE_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
               <label className="flex items-center justify-center gap-2 w-full py-8 border-2 border-dashed border-[#0A0A0A]/20 cursor-pointer hover:border-[#C41E3A] transition-colors">
                 <Upload size={18} className="text-[#64748B]" />
                 <span className="text-sm text-[#64748B]" style={{ fontFamily: "'Space Mono', monospace" }}>

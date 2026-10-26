@@ -42,7 +42,7 @@ function ProductDetailInner({ slug, onAddToCart, onNavigate }: {
   }
 
   return (
-    <ProductDetail product={product} onAddToCart={onAddToCart} onNavigate={onNavigate} />
+    <ProductDetail key={product.id} product={product} onAddToCart={onAddToCart} onNavigate={onNavigate} />
   );
 }
 

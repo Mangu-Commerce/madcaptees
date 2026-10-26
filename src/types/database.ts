@@ -74,6 +74,7 @@ export interface Database {
           alt_text: string | null;
           is_primary: boolean;
           sort_order: number;
+          image_type?: 'design' | 'model' | 'flat';
         };
         Insert: {
           id?: string;
@@ -82,6 +83,7 @@ export interface Database {
           alt_text?: string | null;
           is_primary?: boolean;
           sort_order?: number;
+          image_type?: 'design' | 'model' | 'flat';
         };
         Update: {
           id?: string;
@@ -90,6 +92,7 @@ export interface Database {
           alt_text?: string | null;
           is_primary?: boolean;
           sort_order?: number;
+          image_type?: 'design' | 'model' | 'flat';
         };
       };
       product_variants: {

@@ -70,6 +70,7 @@ function transformProduct(row: ProductJoinedRow): Product {
         alt_text: img.alt_text,
         is_primary: img.is_primary,
         sort_order: img.sort_order,
+        image_type: img.image_type ?? 'flat',
       })
     ),
     product_variants: (row.product_variants ?? []).map(
@@ -86,6 +87,15 @@ function transformProduct(row: ProductJoinedRow): Product {
       })
     ),
   };
+}
+
+/**
+ * `image_type` lives in migration 003. Only send it for design/model images
+ * so inserts keep working on a database that has not run that migration yet
+ * (the column defaults to 'flat').
+ */
+function imageTypeColumn(type: ProductImage['image_type']) {
+  return type && type !== 'flat' ? { image_type: type } : {};
 }
 
 function transformOrder(row: DbOrderRow & { order_items?: DbOrderItemRow[] | null }): Order {
@@ -323,7 +333,7 @@ export type InsertProduct = Omit<
   Product,
   'id' | 'created_at' | 'updated_at' | 'product_images' | 'product_variants'
 > & {
-  product_images?: Pick<ProductImage, 'url' | 'alt_text' | 'is_primary' | 'sort_order'>[];
+  product_images?: Pick<ProductImage, 'url' | 'alt_text' | 'is_primary' | 'sort_order' | 'image_type'>[];
   product_variants?: Pick<ProductVariant, 'size' | 'color' | 'sku' | 'pod_variant_id' | 'price_adjustment' | 'stock' | 'available'>[];
 };
 
@@ -352,6 +362,7 @@ export async function createProduct(product: InsertProduct): Promise<Product> {
         alt_text: img.alt_text ?? null,
         is_primary: img.is_primary ?? i === 0,
         sort_order: img.sort_order ?? i,
+        image_type: img.image_type ?? 'flat',
       })),
       product_variants: (product.product_variants ?? []).map((v, i) => ({
         id: `var-${Date.now()}-${i}`,
@@ -406,6 +417,7 @@ export async function createProduct(product: InsertProduct): Promise<Product> {
     alt_text: img.alt_text ?? null,
     is_primary: img.is_primary ?? i === 0,
     sort_order: img.sort_order ?? i,
+    ...imageTypeColumn(img.image_type),
   }));
 
   if (images.length > 0) {
@@ -565,7 +577,7 @@ export async function uploadProductImage(
 
 export async function replaceProductImages(
   productId: string,
-  images: Pick<ProductImage, 'url' | 'alt_text' | 'is_primary' | 'sort_order'>[]
+  images: Pick<ProductImage, 'url' | 'alt_text' | 'is_primary' | 'sort_order' | 'image_type'>[]
 ): Promise<void> {
   if (!hasSupabaseConfig) return;
 
@@ -579,6 +591,7 @@ export async function replaceProductImages(
     alt_text: img.alt_text ?? null,
     is_primary: img.is_primary ?? i === 0,
     sort_order: img.sort_order ?? i,
+    ...imageTypeColumn(img.image_type),
   }));
 
   const { error } = await supabase.from('product_images').insert(rows);

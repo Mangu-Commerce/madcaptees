@@ -48,6 +48,7 @@ users ||--o{ orders : places
 | alt_text | TEXT | | Accessibility description |
 | is_primary | BOOLEAN | DEFAULT false | First image = main display |
 | sort_order | INTEGER | DEFAULT 0 | Gallery sort position |
+| image_type | TEXT | NOT NULL, DEFAULT 'flat', CHECK IN ('design','model','flat') | `design` = art on its own (shop grid block), `model` = person wearing it (leads the product page), `flat` = garment mockup. Added in migration 003 |
 
 #### `product_variants`
 | Column | Type | Constraints | Description |

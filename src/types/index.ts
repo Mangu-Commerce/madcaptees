@@ -2,6 +2,14 @@
 // Madcap Tees — TypeScript Type Definitions
 // ============================================
 
+/**
+ * What an image shows:
+ * - `design`: the artwork on its own (square shop-grid block)
+ * - `model`:  a person wearing the tee (leads the product page gallery)
+ * - `flat`:   the garment mockup on its own (default for existing images)
+ */
+export type ImageType = 'design' | 'model' | 'flat';
+
 export interface ProductImage {
   id: string;
   product_id: string;
@@ -9,6 +17,7 @@ export interface ProductImage {
   alt_text: string | null;
   is_primary: boolean;
   sort_order: number;
+  image_type?: ImageType;
 }
 
 export interface ProductVariant {
@@ -146,7 +155,13 @@ export const PRODUCT_COLORS = [
   { name: 'Teal', hex: '#1B7A7A' },
 ] as const;
 
-export const PRODUCT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL', 'OS'] as const;
+export const IMAGE_TYPES: { value: ImageType; label: string }[] = [
+  { value: 'design', label: 'Design art (shop grid block)' },
+  { value: 'model', label: 'Model wearing it (product page)' },
+  { value: 'flat', label: 'Flat mockup' },
+];
+
+export const PRODUCT_SIZES =['S', 'M', 'L', 'XL', '2XL', '3XL', 'OS'] as const;
 
 export const PRODUCT_CATEGORIES = [
   { value: 'tees', label: 'T-Shirts', icon: 'shirt' },
