@@ -3,6 +3,7 @@
 // ============================================
 
 import type { Product, Collection, OrderStatus } from '@/types';
+import { CONCEPT_PRODUCTS } from './concepts';
 
 import hero1 from '@/assets/hero-1.jpg';
 import hero2 from '@/assets/hero-2.jpg';
@@ -300,6 +301,8 @@ export const SEEDED_PRODUCTS: Product[] = [
     ],
   },
 ];
+
+SEEDED_PRODUCTS.push(...CONCEPT_PRODUCTS);
 
 export const SEEDED_ORDERS = [
   {

@@ -153,6 +153,12 @@ export const PRODUCT_COLORS = [
   { name: 'Navy', hex: '#1E3A5F' },
   { name: 'Red', hex: '#C41E3A' },
   { name: 'Teal', hex: '#1B7A7A' },
+  { name: 'Natural', hex: '#E6DAC3' },
+  { name: 'Ash', hex: '#D9D9D5' },
+  { name: 'Pink', hex: '#F2C6D0' },
+  { name: 'Maroon', hex: '#5B1C28' },
+  { name: 'Olive', hex: '#4B5230' },
+  { name: 'Charcoal', hex: '#36363A' },
 ] as const;
 
 export const IMAGE_TYPES: { value: ImageType; label: string }[] = [

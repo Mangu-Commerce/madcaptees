@@ -17,17 +17,18 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetailProps) {
+  const availableSizes = [...new Set(product.product_variants.filter(v => v.available).map(v => v.size))];
+  const availableColors = [...new Set(product.product_variants.filter(v => v.available).map(v => v.color))];
+
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  // A product that only comes in one colour has nothing to choose
+  const [selectedColor, setSelectedColor] = useState<string>(availableColors.length === 1 ? availableColors[0] : '');
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
   const primaryImage = product.product_images.find(i => i.is_primary) || product.product_images[0];
   const hasSale = product.sale_price !== null && product.sale_price < product.base_price;
   const currentPrice = hasSale ? product.sale_price! : product.base_price;
-
-  const availableSizes = [...new Set(product.product_variants.filter(v => v.available).map(v => v.size))];
-  const availableColors = [...new Set(product.product_variants.filter(v => v.available).map(v => v.color))];
 
   const selectedVariant = product.product_variants.find(
     v => v.size === selectedSize && v.color === selectedColor && v.available
@@ -151,26 +152,27 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
               Color
             </p>
             <div className="flex flex-wrap gap-3">
-              {PRODUCT_COLORS.map(color => {
-                const isAvailable = availableColors.includes(color.name);
-                return (
-                  <button
-                    key={color.name}
-                    onClick={() => isAvailable && setSelectedColor(color.name)}
-                    disabled={!isAvailable}
-                    className={`w-10 h-10 rounded-full border-2 transition-all ${
-                      selectedColor === color.name
-                        ? 'border-[#0A0A0A] scale-110'
-                        : isAvailable
-                        ? 'border-transparent hover:scale-105'
-                        : 'border-gray-200 opacity-30 cursor-not-allowed'
-                    }`}
-                    title={color.name}
-                  >
-                    <span className="block w-full h-full rounded-full border border-[#0A0A0A]/10" style={{ backgroundColor: color.hex }} />
-                  </button>
-                );
-              })}
+              {/* Only the colours this product comes in */}
+              {PRODUCT_COLORS.filter(color => availableColors.includes(color.name)).map(color => (
+                <button
+                  key={color.name}
+                  onClick={() => setSelectedColor(color.name)}
+                  className={`w-10 h-10 rounded-full border-2 transition-all ${
+                    selectedColor === color.name
+                      ? 'border-[#0A0A0A] scale-110'
+                      : 'border-transparent hover:scale-105'
+                  }`}
+                  title={color.name}
+                  aria-label={`Color: ${color.name}${selectedColor === color.name ? ', selected' : ''}`}
+                >
+                  <span className="block w-full h-full rounded-full border border-[#0A0A0A]/10" style={{ backgroundColor: color.hex }} />
+                </button>
+              ))}
+              {selectedColor && (
+                <span className="self-center text-sm text-[#64748B]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  {selectedColor}
+                </span>
+              )}
             </div>
           </div>
 
@@ -193,7 +195,7 @@ export function ProductDetail({ product, onAddToCart, onNavigate }: ProductDetai
               } ${addedToCart ? 'bg-[#00C853]' : ''}`}
               style={{ backgroundColor: addedToCart ? '#00C853' : '#C41E3A', fontFamily: "'Space Mono', monospace" }}
             >
-              {addedToCart ? 'Added to Cart!' : canAddToCart ? 'Add to Cart' : 'Select Size & Color'}
+              {addedToCart ? 'Added to Cart!' : canAddToCart ? 'Add to Cart' : selectedSize ? 'Select Color' : selectedColor ? 'Select Size' : 'Select Size & Color'}
             </button>
           </div>
 
